@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #010a16;
+  font-family: "Nunito", "Segoe UI", system-ui, -apple-system, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
+}
+
+/* Portrait stage: full height, width limited so desktop gets a phone-like column */
+.game-stage {
+  height: 100dvh;
+  width: 100vw;
+  max-width: calc(100dvh * 0.62);
+}
+@media (max-aspect-ratio: 0.62) {
+  .game-stage {
+    max-width: 100vw;
+  }
+}
+
+.title-text {
+  background: linear-gradient(180deg, #ffffff 0%, #bff6ff 45%, #3fc6ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 6px 0 rgba(4, 40, 70, 0.75)) drop-shadow(0 14px 30px rgba(0, 170, 255, 0.35));
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.animate-pop {
+  animation: pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+.animate-float {
+  animation: floaty 3.5s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+.animate-breathe {
+  animation: breathe 1.8s ease-in-out infinite;
+}
+
+@keyframes pulseFast {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+.animate-pulse-fast {
+  animation: pulseFast 0.5s ease-in-out infinite;
+}
+
+@keyframes zone {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.animate-zone {
+  animation: zone 3.5s ease-out both;
+}
