@@ -1,0 +1,29 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Deep Dive",
+  "orientation": "portrait",
+  "scope": "/",
+  "short_name": "Deep Dive",
+  "start_url": "/",
+  "theme_color": "#010a16",
+  "id": "deep-dive",
+  "description": "deep-dive",
+  "lang": "en",
+  "icons": [
+  {
+    "src": "/launchericon-192x192.png",
+    "sizes": "192x192",
+    "type": "image/png"
+  },
+  {
+    "src": "/launchericon-512x512.png",
+    "sizes": "512x512",
+    "type": "image/png"
+  }
+]
+  "categories": [
+    "games"
+  ]
+}
