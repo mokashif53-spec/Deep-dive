@@ -41,6 +41,14 @@ export function MenuScreen({ best, onPlay, music, sound, onToggleMusic, onToggle
         <div className="flex gap-3">
           <TogglePill label="Sound" on={sound} onToggle={onToggleSound} icon={<SoundIcon />} />
           <TogglePill label="Music" on={music} onToggle={onToggleMusic} icon={<MusicIcon />} />
+          <a
+  href="https://deep-dive-a2t3.vercel.app/privacy-policy.html"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="mt-3 text-[11px] font-bold text-white/70 underline"
+>
+  Privacy Policy
+</a>
         </div>
       </div>
     </div>
