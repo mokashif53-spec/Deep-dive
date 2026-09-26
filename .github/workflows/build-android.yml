@@ -2,6 +2,9 @@ name: Build Deep Dive Android AAB
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
