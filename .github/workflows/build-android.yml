@@ -69,12 +69,11 @@ jobs:
               }
           """
 
-          if "signingConfigs {" not in text:
-              text = text.replace(
-                  "android {",
-                  "android {\\n" + signing_config,
-                  1
-              )
+          text = text.replace(
+              "android {",
+              "android {" + signing_config,
+              1
+          )
 
           marker = "buildTypes {"
           build_types_pos = text.find(marker)
@@ -91,13 +90,11 @@ jobs:
                   signingConfig signingConfigs.release
           """
 
-          if "signingConfig signingConfigs.release" not in text:
-              insert_pos = release_pos + len("release {")
-              text = (
-                  text[:insert_pos]
-                  + signing_line
-                  + text[insert_pos:]
-              )
+          text = (
+              text[:release_pos + len("release {")]
+              + signing_line
+              + text[release_pos + len("release {"):]
+          )
 
           path.write_text(text)
           PY
