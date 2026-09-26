@@ -1,0 +1,95 @@
+name: Build Deep Dive Android AAB
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 36 SDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;35.0.0"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Configure Android / AdMob / target SDK
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          manifest = Path('android/app/src/main/AndroidManifest.xml')
+          s = manifest.read_text()
+
+          meta = '''
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="@string/admob_app_id" />'''
+
+          if 'com.google.android.gms.ads.APPLICATION_ID' not in s:
+              s = s.replace('</application>', meta + '\n    </application>')
+
+          manifest.write_text(s)
+
+          strings = Path('android/app/src/main/res/values/strings.xml')
+          s = strings.read_text()
+
+          if 'name="admob_app_id"' not in s:
+              s = s.replace(
+                  '</resources>',
+                  '    <string name="admob_app_id">ca-app-pub-7731026016819930~9125863705</string>\n</resources>'
+              )
+
+          strings.write_text(s)
+
+          variables = Path('android/variables.gradle')
+          s = variables.read_text()
+          s = re.sub(r'compileSdkVersion\s*=\s*\d+', 'compileSdkVersion = 36', s)
+          s = re.sub(r'targetSdkVersion\s*=\s*\d+', 'targetSdkVersion = 36', s)
+          variables.write_text(s)
+          PY
+
+          npx cap sync android
+
+      - name: Build unsigned release AAB
+        working-directory: android
+        run: ./gradlew bundleRelease --no-daemon
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deep-dive-release-aab
+          path: android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
