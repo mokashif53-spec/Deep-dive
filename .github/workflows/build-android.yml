@@ -43,10 +43,50 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Set Android SDK 36
+      - name: Set Android SDK and Version
         run: |
-          sed -i 's/compileSdkVersion = 35/compileSdkVersion = 36/g' android/variables.gradle
-          sed -i 's/targetSdkVersion = 35/targetSdkVersion = 36/g' android/variables.gradle
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          variables = Path("android/variables.gradle")
+
+          if variables.exists():
+              text = variables.read_text()
+
+              text = re.sub(
+                  r'compileSdkVersion\s*=\s*\d+',
+                  'compileSdkVersion = 36',
+                  text
+              )
+
+              text = re.sub(
+                  r'targetSdkVersion\s*=\s*\d+',
+                  'targetSdkVersion = 36',
+                  text
+              )
+
+              variables.write_text(text)
+
+          build = Path("android/app/build.gradle")
+          text = build.read_text()
+
+          text = re.sub(
+              r'versionCode\s+\d+',
+              'versionCode 2',
+              text,
+              count=1
+          )
+
+          text = re.sub(
+              r'versionName\s+"[^"]*"',
+              'versionName "1.0.1"',
+              text,
+              count=1
+          )
+
+          build.write_text(text)
+          PY
 
       - name: Decode signing key
         env:
@@ -77,29 +117,35 @@ jobs:
               }
           """
 
-          text = text.replace(
-              "android {",
-              "android {" + signing_config,
-              1
-          )
+          if "signingConfigs {" not in text:
+              text = text.replace(
+                  "android {",
+                  "android {" + signing_config,
+                  1
+              )
 
-          build_types_pos = text.find("buildTypes {")
-          if build_types_pos == -1:
-              raise SystemExit("buildTypes block not found")
+          if "signingConfig signingConfigs.release" not in text:
+              build_types_pos = text.find("buildTypes {")
 
-          release_pos = text.find("release {", build_types_pos)
-          if release_pos == -1:
-              raise SystemExit("release block not found")
+              if build_types_pos == -1:
+                  raise SystemExit("buildTypes block not found")
 
-          signing_line = """
+              release_pos = text.find("release {", build_types_pos)
+
+              if release_pos == -1:
+                  raise SystemExit("release block not found")
+
+              signing_line = """
                   signingConfig signingConfigs.release
-          """
+              """
 
-          text = (
-              text[:release_pos + len("release {")]
-              + signing_line
-              + text[release_pos + len("release {"):]
-          )
+              insert_pos = release_pos + len("release {")
+
+              text = (
+                  text[:insert_pos]
+                  + signing_line
+                  + text[insert_pos:]
+              )
 
           path.write_text(text)
           PY
@@ -110,10 +156,11 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew bundleRelease --no-daemon
+        run: |
+          ./gradlew bundleRelease --no-daemon
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: Deep-Dive-AAB
+          name: Deep-Dive-AAB-v1.0.1
           path: android/app/build/outputs/bundle/release/*.aab
