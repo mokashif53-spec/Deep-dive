@@ -24,12 +24,12 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
 
       - name: Setup Android
         uses: android-actions/setup-android@v4
         with:
-          packages: 'platforms;android-36 build-tools;36.0.0'
+          packages: "platforms;android-36 build-tools;36.0.0"
 
       - name: Install dependencies
         run: npm install
@@ -42,10 +42,11 @@ jobs:
 
       - name: Sync Capacitor
         run: npx cap sync android
-              - name: Set Android SDK 36
+
+      - name: Set Android SDK 36
         run: |
-          sed -i 's/targetSdkVersion = 35/targetSdkVersion = 36/g' android/variables.gradle
           sed -i 's/compileSdkVersion = 35/compileSdkVersion = 36/g' android/variables.gradle
+          sed -i 's/targetSdkVersion = 35/targetSdkVersion = 36/g' android/variables.gradle
 
       - name: Decode signing key
         env:
@@ -82,14 +83,11 @@ jobs:
               1
           )
 
-          marker = "buildTypes {"
-          build_types_pos = text.find(marker)
-
+          build_types_pos = text.find("buildTypes {")
           if build_types_pos == -1:
               raise SystemExit("buildTypes block not found")
 
           release_pos = text.find("release {", build_types_pos)
-
           if release_pos == -1:
               raise SystemExit("release block not found")
 
