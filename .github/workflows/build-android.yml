@@ -39,6 +39,10 @@ jobs:
 
       - name: Sync Capacitor
         run: npx cap sync android
+              - name: Set Android SDK 36
+        run: |
+          sed -i 's/targetSdkVersion = 35/targetSdkVersion = 36/g' android/variables.gradle
+          sed -i 's/compileSdkVersion = 35/compileSdkVersion = 36/g' android/variables.gradle
 
       - name: Decode signing key
         env:
