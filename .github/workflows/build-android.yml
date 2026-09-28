@@ -43,12 +43,13 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Set Android SDK and Version
+      - name: Configure Android
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
 
+          # Android SDK versions
           variables = Path("android/variables.gradle")
 
           if variables.exists():
@@ -68,24 +69,44 @@ jobs:
 
               variables.write_text(text)
 
+          # Version code/name
           build = Path("android/app/build.gradle")
           text = build.read_text()
 
           text = re.sub(
               r'versionCode\s+\d+',
-              'versionCode 2',
+              'versionCode 3',
               text,
               count=1
           )
 
           text = re.sub(
               r'versionName\s+"[^"]*"',
-              'versionName "1.0.1"',
+              'versionName "1.0.2"',
               text,
               count=1
           )
 
           build.write_text(text)
+
+          # Add AdMob App ID to AndroidManifest
+          manifest = Path("android/app/src/main/AndroidManifest.xml")
+          text = manifest.read_text()
+
+          admob = """
+            <meta-data
+                android:name="com.google.android.gms.ads.APPLICATION_ID"
+                android:value="ca-app-pub-7731026016819930~9125863705" />
+          """
+
+          if "com.google.android.gms.ads.APPLICATION_ID" not in text:
+              text = text.replace(
+                  "</application>",
+                  admob + "\n    </application>",
+                  1
+              )
+
+          manifest.write_text(text)
           PY
 
       - name: Decode signing key
@@ -162,5 +183,5 @@ jobs:
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: Deep-Dive-AAB-v1.0.1
+          name: Deep-Dive-AAB-v1.0.2
           path: android/app/build/outputs/bundle/release/*.aab
